@@ -1,0 +1,43 @@
+# 创建 topic
+bin/kafka-topics.sh  --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test
+
+# 获取topic 列表
+bin/kafka-topics.sh --list --zookeeper localhost:2181
+
+#删除topic
+bin/kafka-topics.sh --delete --topic test --zookeeper localhost:2181
+Note: This will have no impact if delete.topic.enable is not set to true.
+
+ 如果没有写入配置 delete.topic.enable 则  kafka 默认做逻辑删除  如果要真正的删除需要到zookeeper 里面做手动删除
+反正如果配置了delete.topic.enable 则kafka会真正的删除数据 属于不可逆操作
+在1.0.0 以后的版本中默认配置为true
+
+# 发送消息
+kafka_2.13-2.8.0]# bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test
+#消费消息
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test
+# 消费所有的消息
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --from-beginning --topic test
+# 订阅多个消费主题topic
+bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --from-beginning --whitelist 'test|test1'
+
+#单播消息
+同一个主题下的一条消息 只允许被同一组里面的其中一个consumer 消费一次
+bin/kafka-console-consumer.sh  --bootstrap-server localhost:9092 --consumer-property group.id=groupTest --topic test
+
+#多播消息
+同一主题下的一条消息 会被订阅了该主题的所有的组消费
+多个消费组订阅同一个主题
+bin/kafka-console-consumer.sh  --bootstrap-server localhost:9092 --consumer-property group.id=groupTest1 --topic test
+
+#查看消费组名
+bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --list
+
+#查看消费组的消费偏移量
+bin/kafka-consumer-groups.sh --bootstrap-server localhost:9092 --describe --group groupTest1
+
+# 启动集群
+bin/kafka-server-start.sh -daemon config/server-1.properties
+bin/kafka-server-start.sh -daemon config/server-2.properties
+
+
